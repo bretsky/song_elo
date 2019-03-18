@@ -12,7 +12,8 @@ from pygame import mixer
 
 
 K_FACTOR = 128
-MUSIC_PATH = '../../'
+MUSIC_PATH = '../../Master/'
+
 
 
 
@@ -20,15 +21,24 @@ MUSIC_PATH = '../../'
 
 
 def crawl(path):
-	for item in os.listdir(path):
-		if os.path.isfile(path + '/' + item):
+	for item in os.listdir(MUSIC_PATH + path):
+		if os.path.isfile(MUSIC_PATH + path + '/' + item):
 			if item.split('.')[-1].lower() == 'mp3' and path + '/' + item not in songs_elo:
-				# print("adding new song")
-				audiofile = mutagen.File(path + '/' + item)
+				print("adding new song")
+
+				audiofile = mutagen.File(MUSIC_PATH + path + '/' + item)
 				title = str(audiofile.get("TIT2", "Unknown"))
+				print(title)
+				print(item)
+				text = audiofile.tags.getall('TXXX')
+				elo = 1000
+				for t in text:
+					if t.desc == 'elo':
+						elo = t.text
 				artist = str(audiofile.get("TPE1", "Unknown"))
-				songs_elo[item] = {"elo": 1000, "title": title, "artist": artist}
-		else:
+				songs_elo[path + '/' + item] = {"elo": elo, "title": title, "artist": artist, "n": 0}
+		elif os.path.isdir(MUSIC_PATH + path + '/' + item):
+			print(path + '/' + item)
 			crawl(path + '/' + item)
 
 def check(songs):
@@ -41,9 +51,11 @@ def check(songs):
 		del songs[item]
 
 
-def largest(songs):
+def minmax(songs):
 	max_elo = 0
+	min_elo = 2000
 	largest = None
+	smallest = None
 	for song in songs:
 		if songs[song]['elo'] > max_elo:
 			max_elo = songs[song]['elo']
@@ -53,19 +65,42 @@ def largest(songs):
 				print(song_string)
 			except UnicodeEncodeError:
 				print(song_string.encode('ascii', 'ignore').decode())
+		if songs[song]['elo'] < min_elo:
+			min_elo = songs[song]['elo']
+			smallest = song
+			song_string = " ".join((song, ':', str(songs[song])))
+			try:
+				print(song_string)
+			except UnicodeEncodeError:
+				print(song_string.encode('ascii', 'ignore').decode())
+
+
 
 def not_pristine_elos(songs):
 	return len(list(filter(lambda x: songs[x]['elo'] != 1000, songs)))
 
+
 songs_elo = {}
 
 try:
-	songs_elo = json.load(open('elo.json.bak.json', 'r', encoding='utf-8'))
+	songs_elo = json.load(open('new_elo.json', 'r', encoding='utf-8'))
 except FileNotFoundError:
-	crawl(MUSIC_PATH)
+	crawl('')
 
 
-largest(songs_elo)
+# for key in songs_elo:
+# 	if songs_elo[key]['elo'] != 1000:
+# 		songs_elo[key]['elo'] = float(songs_elo[key]["elo"][0])
+# 	# exit()
+
+# json.dump(songs_elo, open('new_elo.json', 'w', encoding='utf-8'), ensure_ascii=False)
+
+
+# exit()
+
+# crawl(MUSIC_PATH)
+
+minmax(songs_elo)
 
 print(str(len(songs_elo)))
 
@@ -95,7 +130,7 @@ value = {'a': 1, 'b': 0, 'c': 0.5}
 play_state = True
 
 
-
+history = []
 
 while user_input != 'end':
 
@@ -115,6 +150,14 @@ while user_input != 'end':
 	user_input = ""
 	while user_input not in accepted_inputs:
 		user_input = input("Choose one: ").lower()
+		if user_input.lower() == 'u':
+			if history:
+				last = history.pop()
+				for pair in last:
+					songs_elo = json.load(open('new_elo.json', 'r', encoding='utf-8'))
+					songs_elo[pair[0]]["elo"] -= pair[1]
+					songs_elo[pair[0]]["n"] -= 1
+					json.dump(songs_elo, open('new_elo.json', 'w', encoding='utf-8'), ensure_ascii=False)
 		if user_input.lower() == 'p':
 			play_state = not play_state
 			print("play state is", play_state)
@@ -133,13 +176,25 @@ while user_input != 'end':
 				test_thread.start()
 
 	if user_input != 'end' and user_input != 's':
-		songs_elo = json.load(open('elo.json.bak.json', 'r', encoding='utf-8'))
+		songs_elo = json.load(open('new_elo.json', 'r', encoding='utf-8'))
 	
 		diff = update(songs_elo[song_a]["elo"], songs_elo[song_b]["elo"], value[user_input])
 		songs_elo[song_a]["elo"] += diff
+		songs_elo[song_a]["n"] += 1
+		audiofile = mutagen.File(MUSIC_PATH + song_a)
+		audiofile.tags.add(mutagen.id3.TXXX(desc='elo', text=str(songs_elo[song_a]["elo"])))
+		audiofile.save()
+
 		songs_elo[song_b]["elo"] -= diff
+		songs_elo[song_b]["n"] += 1
+		audiofile = mutagen.File(MUSIC_PATH + song_b)
+		audiofile.tags.add(mutagen.id3.TXXX(desc='elo', text=str(songs_elo[song_b]["elo"])))
+		audiofile.save()
+		history.append(((song_a, diff), (song_b, -diff)))
 		print("{0:.2f}".format(100*not_pristine_elos(songs_elo)/len(songs_elo)))
-		json.dump(songs_elo, open('elo.json.bak.json', 'w', encoding='utf-8'), ensure_ascii=False)
+		print(sum((songs_elo[song]['n'] for song in songs_elo))/len(songs_elo))
+		print(sum((songs_elo[song]['elo'] for song in songs_elo))/len(songs_elo))
+		json.dump(songs_elo, open('new_elo.json', 'w', encoding='utf-8'), ensure_ascii=False)
 		print(("+" if diff >= 0 else "") + str(diff))
 		
 		if play_state:
