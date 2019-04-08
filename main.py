@@ -52,8 +52,9 @@ def check(songs):
 
 
 def minmax(songs):
-	max_elo = 0
-	min_elo = 2000
+	elos = [songs[song]["elo"] for song in songs]
+	max_elo = min(elos)
+	min_elo = max(elos)
 	largest = None
 	smallest = None
 	for song in songs:
@@ -75,9 +76,27 @@ def minmax(songs):
 				print(song_string.encode('ascii', 'ignore').decode())
 
 
-
 def not_pristine_elos(songs):
 	return len(list(filter(lambda x: songs[x]['elo'] != 1000, songs)))
+
+def stddev(songs):
+	return (sum((songs[s]["elo"] - 1000) ** 2 for s in songs) / len(songs)) ** (1/2)
+
+def round_to(x, base=50):
+    return base * round(x/base)
+
+
+def get_dist(songs):
+	elos = [songs[song]["elo"] for song in songs]
+	min_elo = round_to(min(elos))
+	max_elo = round_to(max(elos))
+	dist = {}
+	for i in range(min_elo, max_elo + 50, 50):
+		dist[i] = 0
+	for song in songs:
+		dist[round_to(songs[song]["elo"])] += 1
+	for i in range(min_elo, max_elo + 50, 50):
+		print(i, dist[i])
 
 
 songs_elo = {}
@@ -149,8 +168,8 @@ while user_input != 'end':
 	print("C: random")
 	user_input = ""
 	while user_input not in accepted_inputs:
-		user_input = input("Choose one: ").lower()
-		if user_input.lower() == 'u':
+		user_input = input("Choose one: ").lower().strip()
+		if user_input == 'u':
 			if history:
 				last = history.pop()
 				for pair in last:
@@ -158,10 +177,12 @@ while user_input != 'end':
 					songs_elo[pair[0]]["elo"] -= pair[1]
 					songs_elo[pair[0]]["n"] -= 1
 					json.dump(songs_elo, open('new_elo.json', 'w', encoding='utf-8'), ensure_ascii=False)
-		if user_input.lower() == 'p':
+		if user_input == 'd':
+			get_dist(songs_elo)
+		if user_input == 'p':
 			play_state = not play_state
 			print("play state is", play_state)
-		if user_input.lower() == 't':
+		if user_input == 't':
 			test_song_input = ""
 			while test_song_input not in ('a', 'b', 'end', 's'):
 				test_song_input = input("Which song?: ")
@@ -194,6 +215,7 @@ while user_input != 'end':
 		print("{0:.2f}".format(100*not_pristine_elos(songs_elo)/len(songs_elo)))
 		print(sum((songs_elo[song]['n'] for song in songs_elo))/len(songs_elo))
 		print(sum((songs_elo[song]['elo'] for song in songs_elo))/len(songs_elo))
+		print(stddev(songs_elo))
 		json.dump(songs_elo, open('new_elo.json', 'w', encoding='utf-8'), ensure_ascii=False)
 		print(("+" if diff >= 0 else "") + str(diff))
 		
@@ -203,7 +225,7 @@ while user_input != 'end':
 			# print(mp3_song.info.sample_rate)
 			# mixer.init(frequency=mp3_song.info.sample_rate)
 			# mixer.music.load((MUSIC_PATH + song).encode('utf-8'))
-			# mixer.music.set_volume(0.05)
+			# mixer.music.set_volume(0.5)
 			# song_thread = threading.Thread(target=mixer.music.play)
 			song_thread = threading.Thread(target=subprocess.call, args=(["afplay", MUSIC_PATH + song],))
 			
@@ -217,6 +239,7 @@ while user_input != 'end':
 				sys.stdout.flush()
 				if time.time() - start > (i + 1) / 64 * length:
 					i += 1
+				time.sleep(length / 256)
 			mixer.quit()
 			print()
 			
