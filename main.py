@@ -141,6 +141,12 @@ def expected(a, b):
 def update(a, b, result):
 	return K_FACTOR * (result - expected(a, b))
 
+def get_weights(songs, keys):
+	weights = []
+	for key in keys:
+		weights.append(expected(songs[key]["elo"], 1000))
+	return weights
+
 user_input = ""
 
 accepted_inputs = ['a', 'b', 'c', 'end', 's']
@@ -152,8 +158,11 @@ play_state = True
 history = []
 
 while user_input != 'end':
-
-	song_a = random.choice(list(songs_elo.keys()))
+	keys = list(songs_elo.keys())
+	weights = get_weights(songs_elo, keys)
+	song_a = random.choices(keys, weights)[0]
+	print(weights[keys.index(song_a)] / sum(weights) * 100)
+	print(weights[keys.index(song_a)] / sum(weights) * len(weights))
 	song_b = random.choice(list(songs_elo.keys()))
 	song_string = " ".join(("A:", song_a, ":", str(songs_elo[song_a])))
 	try:
