@@ -7,12 +7,18 @@ import subprocess
 import sys
 import threading
 import time
+import unicodedata
+import win32gui, win32console
+import win32con
+from win32com.client import Dispatch
+import pywintypes
 
 from pygame import mixer
 
 
 K_FACTOR = 128
-MUSIC_PATH = '../../Master/'
+MUSIC_PATH = '../../Master/' # Mac or Linux
+# MUSIC_PATH = '..\\..\\Master\\'
 
 
 
@@ -147,6 +153,16 @@ def get_weights(songs, keys):
 		weights.append(expected(songs[key]["elo"], 1000))
 	return weights
 
+# Moves window to foreground (only on Windows)
+def set_foreground(handle):
+        win32gui.ShowWindow(handle, win32con.SW_RESTORE)
+        win32gui.SetWindowPos(handle, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)  
+        win32gui.SetWindowPos(handle, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)  
+        win32gui.SetWindowPos(handle, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_SHOWWINDOW + win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)
+        shell = Dispatch("WScript.Shell")
+        shell.SendKeys('%')
+        win32gui.SetForegroundWindow(handle)
+
 user_input = ""
 
 accepted_inputs = ['a', 'b', 'c', 'end', 's']
@@ -164,20 +180,29 @@ while user_input != 'end':
 	print(weights[keys.index(song_a)] / sum(weights) * 100)
 	print(weights[keys.index(song_a)] / sum(weights) * len(weights))
 	song_b = random.choice(list(songs_elo.keys()))
+	# song_a = unicodedata.normalize('NFC', song_a)
+	# song_b = unicodedata.normalize('NFC', song_b)
 	song_string = " ".join(("A:", song_a, ":", str(songs_elo[song_a])))
 	try:
-		print(song_string)
+		print(unicodedata.normalize('NFC', song_string))
 	except UnicodeEncodeError:
 		print(song_string.encode('ascii', 'ignore').decode())
 	song_string = " ".join(("B:", song_b, ":", str(songs_elo[song_b])))
 	try:
-		print(song_string)
+		print(unicodedata.normalize('NFC', song_string))
 	except UnicodeEncodeError:
 		print(song_string.encode('ascii', 'ignore').decode())
 	print("C: random")
 	user_input = ""
+	window = win32console.GetConsoleWindow()
+	print(window)
+	set_foreground(window)
 	while user_input not in accepted_inputs:
-		user_input = input("Choose one: ").lower().strip()
+		try:
+			user_input = input("Choose one: ").lower().strip()
+		except EOFError:
+			time.sleep(0.1)
+			user_input = input().lower().strip()
 		if user_input == 'u':
 			if history:
 				last = history.pop()
@@ -197,11 +222,13 @@ while user_input != 'end':
 				test_song_input = input("Which song?: ")
 			test_thread = None
 			if test_song_input == 'a':
-				# test_thread = threading.Thread(target=subprocess.call, args=(["chrome", MUSIC_PATH + song_a],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL})
-				test_thread = threading.Thread(target=subprocess.call, args=(["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", MUSIC_PATH + song_a],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL})
+				test_thread = threading.Thread(target=subprocess.call, args=(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", unicodedata.normalize('NFC', MUSIC_PATH + song_a)],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Windows
+				# test_thread = threading.Thread(target=subprocess.call, args=(["google-chrome", MUSIC_PATH + unicodedata.normalize('NFC', song_a)],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Linux
+				# test_thread = threading.Thread(target=subprocess.call, args=(["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", MUSIC_PATH + song_a],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Mac
 			elif test_song_input == 'b':
-				# test_thread = threading.Thread(target=subprocess.call, args=(["chrome", MUSIC_PATH + song_b],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL})
-				test_thread = threading.Thread(target=subprocess.call, args=(["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", MUSIC_PATH + song_b],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL})
+				test_thread = threading.Thread(target=subprocess.call, args=(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", unicodedata.normalize('NFC', MUSIC_PATH + song_b)],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Windows
+				# test_thread = threading.Thread(target=subprocess.call, args=(["google-chrome", MUSIC_PATH + unicodedata.normalize('NFC', song_b)],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Linux
+				# test_thread = threading.Thread(target=subprocess.call, args=(["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", MUSIC_PATH + song_b],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Mac
 			if test_thread:
 				test_thread.start()
 
@@ -211,13 +238,13 @@ while user_input != 'end':
 		diff = update(songs_elo[song_a]["elo"], songs_elo[song_b]["elo"], value[user_input])
 		songs_elo[song_a]["elo"] += diff
 		songs_elo[song_a]["n"] += 1
-		audiofile = mutagen.File(MUSIC_PATH + song_a)
+		audiofile = mutagen.File(MUSIC_PATH + unicodedata.normalize('NFC', song_a))
 		audiofile.tags.add(mutagen.id3.TXXX(desc='elo', text=str(songs_elo[song_a]["elo"])))
 		audiofile.save()
 
 		songs_elo[song_b]["elo"] -= diff
 		songs_elo[song_b]["n"] += 1
-		audiofile = mutagen.File(MUSIC_PATH + song_b)
+		audiofile = mutagen.File(MUSIC_PATH + unicodedata.normalize('NFC', song_b))
 		audiofile.tags.add(mutagen.id3.TXXX(desc='elo', text=str(songs_elo[song_b]["elo"])))
 		audiofile.save()
 		history.append(((song_a, diff), (song_b, -diff)))
@@ -230,15 +257,16 @@ while user_input != 'end':
 		
 		if play_state:
 			song = song_a if user_input == 'a' else song_b if user_input == 'b' else random.choice((song_a, song_b))
-			mp3_song = mutagen.mp3.MP3((MUSIC_PATH + song))
-			# print(mp3_song.info.sample_rate)
+			mp3_song = mutagen.mp3.MP3((MUSIC_PATH + unicodedata.normalize('NFC', song)))
+			print(mp3_song.info.sample_rate)
 			# mixer.init(frequency=mp3_song.info.sample_rate)
-			# mixer.music.load((MUSIC_PATH + song).encode('utf-8'))
+			# mixer.music.load((MUSIC_PATH + unicodedata.normalize('NFC', song)).encode('utf-8'))
 			# mixer.music.set_volume(0.5)
 			# song_thread = threading.Thread(target=mixer.music.play)
-			song_thread = threading.Thread(target=subprocess.call, args=(["afplay", MUSIC_PATH + song],))
+			song_thread = threading.Thread(target=subprocess.call, args=(["mpg123", "--rva-mix", MUSIC_PATH + unicodedata.normalize('NFC', song)],), kwargs={'stdin': subprocess.DEVNULL, 'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL})
 			
 			length = mp3_song.info.length
+
 			song_thread.start()
 			
 			i = 0
