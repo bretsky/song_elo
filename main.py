@@ -195,7 +195,6 @@ while user_input != 'end':
 	print("C: random")
 	user_input = ""
 	window = win32console.GetConsoleWindow()
-	print(window)
 	set_foreground(window)
 	while user_input not in accepted_inputs:
 		try:
