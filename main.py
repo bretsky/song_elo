@@ -197,9 +197,11 @@ while user_input != 'end':
 	window = win32console.GetConsoleWindow()
 	set_foreground(window)
 	while user_input not in accepted_inputs:
+		print(user_input)
 		try:
 			user_input = input("Choose one: ").lower().strip()
 		except EOFError:
+			print('Error')
 			time.sleep(0.1)
 			user_input = input().lower().strip()
 		if user_input == 'u':
@@ -216,16 +218,20 @@ while user_input != 'end':
 			play_state = not play_state
 			print("play state is", play_state)
 		if user_input == 't':
+			print('test')
 			test_song_input = ""
 			while test_song_input not in ('a', 'b', 'end', 's'):
 				test_song_input = input("Which song?: ")
 			test_thread = None
 			if test_song_input == 'a':
-				test_thread = threading.Thread(target=subprocess.call, args=(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", unicodedata.normalize('NFC', MUSIC_PATH + song_a)],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Windows
+				print(unicodedata.normalize('NFC', MUSIC_PATH + song_a))
+				test_thread = threading.Thread(target=subprocess.call, args=(["chrome", unicodedata.normalize('NFC', MUSIC_PATH + song_a)],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Other Windows
+				# test_thread = threading.Thread(target=subprocess.call, args=(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", unicodedata.normalize('NFC', MUSIC_PATH + song_a)],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Windows
 				# test_thread = threading.Thread(target=subprocess.call, args=(["google-chrome", MUSIC_PATH + unicodedata.normalize('NFC', song_a)],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Linux
 				# test_thread = threading.Thread(target=subprocess.call, args=(["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", MUSIC_PATH + song_a],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Mac
 			elif test_song_input == 'b':
-				test_thread = threading.Thread(target=subprocess.call, args=(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", unicodedata.normalize('NFC', MUSIC_PATH + song_b)],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Windows
+				test_thread = threading.Thread(target=subprocess.call, args=(["chrome", unicodedata.normalize('NFC', MUSIC_PATH + song_b)],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Other Windows
+				# test_thread = threading.Thread(target=subprocess.call, args=(["C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", unicodedata.normalize('NFC', MUSIC_PATH + song_b)],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Windows
 				# test_thread = threading.Thread(target=subprocess.call, args=(["google-chrome", MUSIC_PATH + unicodedata.normalize('NFC', song_b)],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Linux
 				# test_thread = threading.Thread(target=subprocess.call, args=(["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", MUSIC_PATH + song_b],), kwargs={'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL}) # Mac
 			if test_thread:
@@ -262,7 +268,7 @@ while user_input != 'end':
 			# mixer.music.load((MUSIC_PATH + unicodedata.normalize('NFC', song)).encode('utf-8'))
 			# mixer.music.set_volume(0.5)
 			# song_thread = threading.Thread(target=mixer.music.play)
-			song_thread = threading.Thread(target=subprocess.call, args=(["mpg123", "--rva-mix", MUSIC_PATH + unicodedata.normalize('NFC', song)],), kwargs={'stdin': subprocess.DEVNULL, 'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL})
+			song_thread = threading.Thread(target=subprocess.call, args=(["mpg123", "--rva-mix", "-g", "-40", MUSIC_PATH + unicodedata.normalize('NFC', song)],), kwargs={'stdin': subprocess.DEVNULL, 'stdout': subprocess.DEVNULL, 'stderr': subprocess.DEVNULL})
 			
 			length = mp3_song.info.length
 
