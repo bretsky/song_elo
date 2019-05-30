@@ -154,16 +154,6 @@ def get_weights(songs, keys):
 		weights.append(expected(songs[key]["elo"], 1000))
 	return weights
 
-# Moves window to foreground (only on Windows)
-def set_foreground(handle):
-        win32gui.ShowWindow(handle, win32con.SW_RESTORE)
-        win32gui.SetWindowPos(handle, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)  
-        win32gui.SetWindowPos(handle, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)  
-        win32gui.SetWindowPos(handle, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_SHOWWINDOW + win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)
-        shell = Dispatch("WScript.Shell")
-        shell.SendKeys('%')
-        win32gui.SetForegroundWindow(handle)
-
 user_input = ""
 
 accepted_inputs = ['a', 'b', 'c', 'end', 's']
