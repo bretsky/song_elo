@@ -1,0 +1,79 @@
+.label {
+	position: absolute;
+	right: 8px;
+	top: 2px;
+	font-size: 32px;
+}
+
+.section-a {
+	background-color: #ff8888;
+}
+
+.section-b {
+	background-color: #8888ff;
+}
+
+.container {
+	font-family: 'Roboto Condensed', sans-serif;
+}
+
+.song-picker-section {
+	position: relative;
+	padding: 8px;
+	padding-right: 32px;
+}
+
+.button {
+	cursor: pointer;
+	border-style: solid;
+	border-width: 2px;
+	border-radius: 4px;
+	border-color: #000000;
+}
+
+.small-button {
+	padding: 6px;
+	background-color: #14868f;
+	color: #ffffff;
+	margin: 4px auto;
+}
+
+.button:hover {
+  filter: brightness(0.9);
+}
+
+.player {
+	width: 100%;
+	margin: auto;
+	margin-bottom: 8px;
+}
+
+.center-container {
+	display: flex;
+	align-items: center;
+	width: 75%;
+	margin: auto;
+}
+
+.song-picker {
+	margin-bottom: 12px;
+}
+
+.queue-song {
+	padding: 2px;
+	border-bottom: 1px solid #aaaaaa;
+	background-color: #042744;
+	color: #ababbe;
+	font-size: 12px;
+}
+
+.odd {
+	background-color: #0c2f4c;
+}
+
+.active {
+	background-color: #14868f;
+	border-top: 1px solid #aaaaaa;
+	color: #ffffff;
+}
+
