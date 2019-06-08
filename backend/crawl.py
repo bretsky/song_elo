@@ -39,5 +39,6 @@ def check(songs):
 		del songs[item]
 
 songs_elo = json.load(open('new_elo.json', 'r', encoding='utf-8'))
+# crawl('')
 check(songs_elo)
-# json.dump(songs_elo, open('new_elo.json', 'w', encoding='utf-8'))
+json.dump(songs_elo, open('new_elo.json', 'w', encoding='utf-8'))

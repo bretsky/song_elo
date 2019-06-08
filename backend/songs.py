@@ -224,4 +224,5 @@ def get_songs_stats():
 	percent_rated = 100*not_pristine_elos(songs_elo)/len(songs_elo)
 	mean_ratings = sum((songs_elo[song]['n'] for song in songs_elo))/len(songs_elo)
 	elo_stddev = stddev(songs_elo)
-	return {"percent_rated": percent_rated, "mean_ratings": mean_ratings, "stddev": elo_stddev}
+	mean_elo = sum((songs_elo[song]['elo'] for song in songs_elo))/len(songs_elo)
+	return {"percent_rated": percent_rated, "mean_ratings": mean_ratings, "stddev": elo_stddev, "mean_elo": mean_elo}

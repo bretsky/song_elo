@@ -16,6 +16,8 @@ export class AppComponent implements OnInit {
 	songTestURL: string;
 	player: HTMLAudioElement;
 	testplayer: HTMLAudioElement;
+	testSource: MediaElementAudioSourceNode;
+	audioSource: MediaElementAudioSourceNode;
 	gain: GainNode;
 	audioCtx = new AudioContext();
 	queue: any;
@@ -24,7 +26,7 @@ export class AppComponent implements OnInit {
 	volume = -2;
 	scaledVolume = 1;
 	testing = false;
-	@ViewChild('HTMLAudioElement') testplayer: HTMLAudioElement;
+	// @ViewChild('HTMLAudioElement', {static: true}) testplayer: HTMLAudioElement;
 
 	constructor(private songsApi: SongsApiService, private meta: Meta) {
 		meta.addTag({name: 'media-controllable'});
@@ -112,10 +114,11 @@ export class AppComponent implements OnInit {
 			this.play(this.queue[0]);
 			this.player = <HTMLAudioElement>document.getElementById('player');
 			this.player.crossOrigin = 'anonymous';
-			this.audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+			this.audioCtx = new(AudioContext)();
 			this.audioSource = this.audioCtx.createMediaElementSource(this.player);
 			
 			this.gain = this.audioCtx.createGain()
+			this.gain.gain.value = 1;
 			this.gain.channelCount = 1;
 			this.gain.channelCountMode = "explicit";
 			this.gain.channelInterpretation = "speakers";
@@ -159,13 +162,15 @@ export class AppComponent implements OnInit {
 	test() {
 		this.testing = !this.testing;
 		this.songTestURL = '';
-		window.setTimeout(() => {
-			this.testplayer = <HTMLAudioElement>document.getElementById('testplayer');
-			this.testplayer.crossOrigin = 'anonymous';
-			this.testSource = this.audioCtx.createMediaElementSource(this.testplayer);
-			this.testSource.connect(this.gain);
-		}, 0);
-		
+		//TODO: also set up the other audio source here if we haven't already
+		if (this.testing) {
+			window.setTimeout(() => {
+				this.testplayer = <HTMLAudioElement>document.getElementById('testplayer');
+				this.testplayer.crossOrigin = 'anonymous';
+				this.testSource = this.audioCtx.createMediaElementSource(this.testplayer);
+				this.testSource.connect(this.gain);
+			}, 0);
+		}
 	}
 
 }
