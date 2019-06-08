@@ -21,13 +21,23 @@ def crawl(path):
 				elo = 1000
 				for t in text:
 					if t.desc == 'elo':
-						elo = t.text
+						elo = float(t.text[0])
 				artist = str(audiofile.get("TPE1", "Unknown"))
 				songs_elo[path + '/' + item] = {"elo": elo, "title": title, "artist": artist, "n": 0}
 		elif os.path.isdir(MUSIC_PATH + path + '/' + item):
 			print(path + '/' + item)
 			crawl(path + '/' + item)
 
+def check(songs):
+	remove = []
+	for item in songs:
+		if not os.path.isfile(MUSIC_PATH + item):
+			print(item)
+			print(songs[item]["elo"])
+			remove.append(item)
+	for item in remove:
+		del songs[item]
 
 songs_elo = json.load(open('new_elo.json', 'r', encoding='utf-8'))
-crawl('')
+check(songs_elo)
+# json.dump(songs_elo, open('new_elo.json', 'w', encoding='utf-8'))

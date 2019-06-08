@@ -50,7 +50,7 @@ def check(songs):
 	remove = []
 	for item in songs:
 		if not os.path.isfile(MUSIC_PATH + item):
-			print(item.encode('ascii', 'ignore').decode())
+			print(item)
 			remove.append(item)
 	for item in remove:
 		del songs[item]
