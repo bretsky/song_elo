@@ -93,23 +93,32 @@ def round_to(x, base=50):
     return base * round(x/base)
 
 
-def get_dist(songs):
+def get_dist(songs, n=50):
 	elos = [songs[song]["elo"] for song in songs]
-	min_elo = round_to(min(elos))
-	max_elo = round_to(max(elos))
+	min_elo = round_to(min(elos), base=n)
+	max_elo = round_to(max(elos), base=n)
 	dist = {}
-	for i in range(min_elo, max_elo + 50, 50):
+	for i in range(min_elo, max_elo + n, n):
 		dist[i] = 0
 	for song in songs:
-		dist[round_to(songs[song]["elo"])] += 1
-	for i in range(min_elo, max_elo + 50, 50):
+		dist[round_to(songs[song]["elo"], base=n)] += 1
+	for i in range(min_elo, max_elo + n, n):
 		print(i, dist[i])
 
+def get_n_dist(songs):
+	max_n = max([songs[song]["n"] for song in songs])
+	dist = {}
+	for i in range(0, max_n + 1):
+		dist[i] = 0
+	for song in songs:
+		dist[songs[song]["n"]] += 1
+	for i in range(0, max_n + 1):
+		print(i, dist[i])
 
 songs_elo = {}
 
 try:
-	songs_elo = json.load(open('new_elo.json', 'r', encoding='utf-8'))
+	songs_elo = json.load(open('elo_id.json', 'r', encoding='utf-8'))
 except FileNotFoundError:
 	crawl('')
 
@@ -119,7 +128,7 @@ except FileNotFoundError:
 # 		songs_elo[key]['elo'] = float(songs_elo[key]["elo"][0])
 # 	# exit()
 
-# json.dump(songs_elo, open('new_elo.json', 'w', encoding='utf-8'), ensure_ascii=False)
+# json.dump(songs_elo, open('elo_id.json', 'w', encoding='utf-8'), ensure_ascii=False)
 
 
 # exit()
@@ -209,12 +218,19 @@ while user_input != 'end':
 			if history:
 				last = history.pop()
 				for pair in last:
-					songs_elo = json.load(open('new_elo.json', 'r', encoding='utf-8'))
+					songs_elo = json.load(open('elo_id.json', 'r', encoding='utf-8'))
 					songs_elo[pair[0]]["elo"] -= pair[1]
 					songs_elo[pair[0]]["n"] -= 1
-					json.dump(songs_elo, open('new_elo.json', 'w', encoding='utf-8'), ensure_ascii=False)
+					json.dump(songs_elo, open('elo_id.json', 'w', encoding='utf-8'), ensure_ascii=False)
 		if user_input == 'd':
 			get_dist(songs_elo)
+		if user_input == 'n':
+			get_n_dist(songs_elo)
+		elif user_input[0] == 'd':
+			try:
+				get_dist(songs_elo, int(user_input[1:].strip()))
+			except Exception as e:
+				print('Invalid number')
 		if user_input == 'p':
 			play_state = not play_state
 			print("play state is", play_state)
@@ -239,7 +255,7 @@ while user_input != 'end':
 				test_thread.start()
 
 	if user_input != 'end' and user_input != 's':
-		songs_elo = json.load(open('new_elo.json', 'r', encoding='utf-8'))
+		songs_elo = json.load(open('elo_id.json', 'r', encoding='utf-8'))
 	
 		diff = update(songs_elo[song_a]["elo"], songs_elo[song_b]["elo"], value[user_input])
 		songs_elo[song_a]["elo"] += diff
@@ -258,7 +274,7 @@ while user_input != 'end':
 		print(sum((songs_elo[song]['n'] for song in songs_elo))/len(songs_elo))
 		print(sum((songs_elo[song]['elo'] for song in songs_elo))/len(songs_elo))
 		print(stddev(songs_elo))
-		json.dump(songs_elo, open('new_elo.json', 'w', encoding='utf-8'), ensure_ascii=False)
+		json.dump(songs_elo, open('elo_id.json', 'w', encoding='utf-8'), ensure_ascii=False)
 		print(("+" if diff >= 0 else "") + str(diff))
 		
 		if play_state:

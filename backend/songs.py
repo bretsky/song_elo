@@ -107,7 +107,7 @@ def get_dist(songs):
 songs_elo = {}
 
 try:
-	songs_elo = json.load(open('new_elo.json', 'r', encoding='utf-8'))
+	songs_elo = json.load(open('elo_id.json', 'r', encoding='utf-8'))
 except FileNotFoundError:
 	crawl('')
 
@@ -163,6 +163,8 @@ def get_from_queue():
 def clear_queue():
 	with open('queue.json', 'w') as queue_file:
 		json.dump([], queue_file)
+	with open('current.txt', 'w', encoding='utf-8') as current_title:
+		current_title.write('')
 	return []
 
 def add_to_queue(song):
@@ -174,6 +176,8 @@ def add_to_queue(song):
 		queue = [song]
 	with open('queue.json', 'w') as queue_file:
 		json.dump(queue, queue_file)
+	with open('current.txt', 'w', encoding='utf-8') as current_title:
+		current_title.write(queue[0]['title'] + '    ')
 	return queue
 
 def remove_from_queue(index):
@@ -186,6 +190,8 @@ def remove_from_queue(index):
 		queue = []
 	with open('queue.json', 'w') as queue_file:
 		json.dump(queue, queue_file)
+	with open('current.txt', 'w', encoding='utf-8') as current_title:
+		current_title.write(queue[0]['title'] + '    ')
 	return queue
 
 def adjust_elo(a, b, result):
@@ -206,7 +212,7 @@ def adjust_elo(a, b, result):
 	# print(sum((songs_elo[song]['n'] for song in songs_elo))/len(songs_elo))
 	# print(sum((songs_elo[song]['elo'] for song in songs_elo))/len(songs_elo))
 	# print(stddev(songs_elo))
-	json.dump(songs_elo, open('new_elo.json', 'w', encoding='utf-8'), ensure_ascii=False)
+	json.dump(songs_elo, open('elo_id.json', 'w', encoding='utf-8'), ensure_ascii=False)
 	return diff
 
 

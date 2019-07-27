@@ -37,8 +37,9 @@ def check(songs):
 			remove.append(item)
 	for item in remove:
 		del songs[item]
+	return songs
 
-songs_elo = json.load(open('new_elo.json', 'r', encoding='utf-8'))
-# crawl('')
-check(songs_elo)
-json.dump(songs_elo, open('new_elo.json', 'w', encoding='utf-8'))
+songs_elo = json.load(open('elo_id.json', 'r', encoding='utf-8'))
+crawl('2019')
+# songs_elo = check(songs_elo)
+json.dump(songs_elo, open('elo_id.json', 'w', encoding='utf-8'))
