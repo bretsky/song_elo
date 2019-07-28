@@ -18,12 +18,32 @@ def crawl(path):
 				print(title)
 				print(item)
 				text = audiofile.tags.getall('TXXX')
+				song_id = ''
+				for t in text:
+					if t.desc == 'id':
+						song_id = t.text[0]
 				elo = 1000
 				for t in text:
 					if t.desc == 'elo':
 						elo = float(t.text[0])
 				artist = str(audiofile.get("TPE1", "Unknown"))
-				songs_elo[path + '/' + item] = {"elo": elo, "title": title, "artist": artist, "n": 0}
+				updated = False
+				if song_id:
+					print('has_id')
+					for key in songs_elo:
+						if 'id' in songs_elo[key] and songs_elo[key]['id'] == song_id:
+							if songs_elo[key] != {"elo": elo, "title": title, "artist": artist, "n": 0, "filename": path + '/' + item}:
+								songs_elo[path + '/' + item] = {"elo": elo, "title": title, "artist": artist, "n": 0, "filename": path + '/' + item}
+								songs_elo[path + '/' + item]["elo"] = songs_elo[key]["elo"]
+								songs_elo[path + '/' + item]["n"] = songs_elo[key]["n"]
+								print("update: ")
+								print(key, "->", path + '/' + item)
+								del songs_elo[key]
+								updated = True
+								break
+				if not updated:
+					
+					songs_elo[path + '/' + item] = {"elo": elo, "title": title, "artist": artist, "n": 0, "filename": path + '/' + item}
 		elif os.path.isdir(MUSIC_PATH + path + '/' + item):
 			print(path + '/' + item)
 			crawl(path + '/' + item)
@@ -40,6 +60,6 @@ def check(songs):
 	return songs
 
 songs_elo = json.load(open('elo_id.json', 'r', encoding='utf-8'))
-crawl('2019')
+crawl('')
 # songs_elo = check(songs_elo)
 json.dump(songs_elo, open('elo_id.json', 'w', encoding='utf-8'))

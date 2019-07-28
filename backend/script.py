@@ -1,15 +1,20 @@
 import json
 import base64
 import hashlib
+import mutagen
+import unicodedata
 # elostr = open('elo.json.bak.json', 'r').read().encode().decode('unicode-escape')
 
-
-elo = json.load(open('new_elo.json', 'r', encoding='utf-8'))
+MUSIC_PATH = '../../../Master/'
+elo = json.load(open('elo_id.json', 'r', encoding='utf-8'))
 
 for key in elo:
 	m = hashlib.shake_256()
 	m.update(key.encode())
 	elo[key]['id'] = base64.urlsafe_b64encode(m.digest(9)).decode()
+	audiofile = mutagen.File(MUSIC_PATH + unicodedata.normalize('NFC', key))
+	audiofile.tags.add(mutagen.id3.TXXX(desc='id', text=elo[key]["id"]))
+	audiofile.save()
 
 # def fix(d):
 # 	new_dict = {}
