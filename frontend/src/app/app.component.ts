@@ -149,7 +149,9 @@ export class AppComponent implements OnInit, AfterViewInit {
 
 	adjustVolume() {
 		this.scaledVolume = Math.pow(10, (this.replaygain + this.volume) / 10);
+		console.log(this.gain.gain.value)
 		this.gain.gain.value = this.scaledVolume;
+		console.log(this.gain.gain.value)
 	}
 
 	play(song) {

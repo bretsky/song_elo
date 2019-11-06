@@ -2,6 +2,8 @@ import json
 import os
 import random
 import mutagen
+import base64
+import hashlib
 import mutagen.mp3
 
 MUSIC_PATH = '../../../Master/' # Mac or Linux
@@ -17,6 +19,8 @@ def crawl(path):
 				title = str(audiofile.get("TIT2", "Unknown"))
 				print(title)
 				print(item)
+				if not audiofile.tags:
+					audiofile.add_tags()
 				text = audiofile.tags.getall('TXXX')
 				song_id = ''
 				for t in text:
@@ -42,8 +46,10 @@ def crawl(path):
 								updated = True
 								break
 				if not updated:
-					
-					songs_elo[path + '/' + item] = {"elo": elo, "title": title, "artist": artist, "n": 0, "filename": path + '/' + item}
+					m = hashlib.shake_256()
+					m.update((path + '/' + item).encode())
+					new_id = base64.urlsafe_b64encode(m.digest(9)).decode()
+					songs_elo[path + '/' + item] = {"elo": elo, "title": title, "artist": artist, "n": 0, "filename": path + '/' + item, 'id': new_id}
 		elif os.path.isdir(MUSIC_PATH + path + '/' + item):
 			print(path + '/' + item)
 			crawl(path + '/' + item)
