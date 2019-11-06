@@ -1,0 +1,102 @@
+<div class="song-container" (mouseup)="unSeek($event)">
+  <div class="accordion-container">
+    <ngb-accordion #acc='ngbAccordion' activeIds='ngb-panel-0'>
+      <ngb-panel id="queue-panel">
+        <ng-template ngbPanelHeader let-opened="opened">
+          <button ngbPanelToggle class='btn btn-link container-fluid text-left pl-0 queue-header'>Build Queue</button>
+        </ng-template>
+        <ng-template ngbPanelContent>
+          <div class="song-picker">
+            <div *ngIf="testing" id="song-player">
+              <audio volume={{scaledVolume}} id="testplayer" #testplayer class="player" autoplay controls [src]="songTestURL">
+              </audio>
+            </div>
+            <div *ngIf="songs && songs.a" (click)='pickSong("a", false)' id="song-a" class="song-picker-section section-a button">
+              <div class="label">
+                A
+              </div>
+              <div id="song-name-a">
+                {{songs.a.title}}
+              </div>
+              <div id="artist-a">
+                {{songs.a.artist}}
+              </div>
+              <div id="filename-a">
+                  {{songs.a.filename}}
+              </div>
+              <div id="song-info-a">
+                <div id="elo-a">
+                  {{'elo: ' + songs.a.elo}}
+                </div>
+                <div id="n-a">
+                  {{'n: ' + songs.a.n}}
+                </div>
+              </div>
+            </div>
+            <hr>
+            <div class="center-container">
+              <div (click)='randomSong()' class="btn button small-button">
+                Random
+              </div>
+              <div (click)='getNewSongs()' class="btn button small-button">
+                Skip
+              </div>
+              <div (click)='clearQueue()' class="btn button small-button">
+                Clear Queue
+              </div>
+              <div>
+                Volume:
+                <input (change)="adjustVolume()" [(ngModel)]="volume" type="number" name="volume" min="-20" max="10">
+              </div>
+              <div (click)='test()' class="btn button small-button">
+                {{testing ? 'Stop Testing' : 'Test'}}
+              </div>
+            </div>
+            <hr>
+            <div *ngIf="songs && songs.b" (click)='pickSong("b", false)' id="song-b" class="song-picker-section section-b button">
+              <div class="label">
+                B
+              </div>
+              <div id="song-name-b">
+                {{songs.b.title}}
+              </div>
+              <div id="artist-b">
+                {{songs.b.artist}}
+              </div>
+              <div id="filename-b">
+                  {{songs.b.filename}}
+              </div>
+              <div id="song-info-b">
+                <div id="elo-b">
+                  {{'elo: ' + songs.b.elo}}
+                </div>
+                <div id="n-b">
+                  {{'n: ' + songs.b.n}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-panel>
+    </ngb-accordion>
+  </div>
+  <div (mousedown)="startSeek($event)" (mouseup)="unSeek($event)" (mousemove)="seek($event)" class="waveform" id="waveform">
+    <div *ngIf="notStarted" (click)='togglePlay()' class="btn button small-button start-button">
+      Start
+    </div>
+  </div>
+  <div *ngIf="!notStarted" class="controls-container">
+    <div class="media-button-container" (click)='wavesurfer.playPause()'>
+      <div  [class.pause]='wavesurfer.isPlaying()' class="media-button">
+      </div>
+    </div>
+  </div>
+  <table class="table table-striped">
+    <tbody>
+      <tr *ngFor="let song of queue; let i = index" [class.active]="i == 0">
+        <th scope="row">{{ i + 1 }}</th>
+        <td>{{song.title}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
