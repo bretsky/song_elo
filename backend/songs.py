@@ -149,6 +149,13 @@ def get_current_songs():
 		response = get_new_pair()
 	return response
 
+def get_top_songs(n, best=True):
+	top_keys = sorted(list(songs_elo.keys()), key=lambda x: songs_elo[x]["elo"], reverse=best)[:n]
+	top_songs = [(key, songs_elo[key]["elo"]) for key in top_keys]
+	with open('best.json' if best else 'worst.json', 'w') as top_file:
+		json.dump(top_songs, top_file)
+	return top_songs
+
 def print_data(data):
 	print(data)
 

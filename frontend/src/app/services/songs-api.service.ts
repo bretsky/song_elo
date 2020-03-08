@@ -55,4 +55,11 @@ export class SongsApiService {
     return this.http.get(`${API_URL}/stats`).catch(SongsApiService._handleError);
   }
 
+  getTopSongs(n: number) {
+    return this.http.get(`${API_URL}/top?n=${n}`).catch(SongsApiService._handleError);
+  }
+
+  getWorstSongs(n: number) {
+    return this.http.get(`${API_URL}/worst?n=${n}`).catch(SongsApiService._handleError);
+  }
 }

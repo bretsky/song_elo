@@ -59,6 +59,21 @@ def remove_song(index):
 def get_stats():
 	return jsonify(get_songs_stats())
 
+@app.route('/top', methods=['GET'])
+def get_top():
+	n = 10
+	if request.args.get('n'):
+		n = int(request.args.get('n'))
+	return jsonify(get_top_songs(n))
+
+@app.route('/worst', methods=['GET'])
+def get_worst():
+	n = 10
+	if request.args.get('n'):
+		n = int(request.args.get('n'))
+	return jsonify(get_top_songs(n, False))
+
+
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=3333, debug=True)

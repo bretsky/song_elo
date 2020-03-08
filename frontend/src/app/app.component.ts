@@ -29,7 +29,8 @@ export class AppComponent implements OnInit, AfterViewInit {
 	testing = false;
 	wavesurfer: WaveSurfer;
 	seeking = false;
-	current 
+	topSongs: any;
+	worstSongs: any;
 
 	constructor(private songsApi: SongsApiService, private meta: Meta, private cd: ChangeDetectorRef) {
 		meta.addTag({name: 'media-controllable'});
@@ -45,6 +46,12 @@ export class AppComponent implements OnInit, AfterViewInit {
 		console.error
 		);
 		this.getQueue();
+		this.songsApi.getTopSongs(50).subscribe(res => {
+			this.topSongs = res;
+		});
+		this.songsApi.getWorstSongs(50).subscribe(res => {
+			this.worstSongs = res;
+		});
 	}
 
 	ngAfterViewInit() {
@@ -135,6 +142,22 @@ export class AppComponent implements OnInit, AfterViewInit {
 			});
 			this.songsApi.addToQueue(this.songs[song]).subscribe(res => {
 				this.queue = res;
+			});
+			this.songsApi.getTopSongs(50).subscribe(res => {
+				for (var i=0; i < 50; i++) {
+					if (res[i][0] != this.topSongs[i][0]) {
+						console.log(res[i][0] + " replaced " + this.topSongs[i][0] + " as the #" + (i + 1) + " best song!");
+					}
+				}
+				this.topSongs = res;
+			});
+			this.songsApi.getWorstSongs(50).subscribe(res => {
+				for (var i=0; i < 50; i++) {
+					if (res[i][0] != this.worstSongs[i][0]) {
+						console.log(res[i][0] + " replaced " + this.worstSongs[i][0] + " as the #" + (i + 1) + " worst song!");
+					}
+				}
+				this.worstSongs = res;
 			});
 			if (!random) {
 				this.songsApi.updateElo(this.songs['a']['filename'], this.songs['b']['filename'], (song == 'a') ? 1 : 0).subscribe(res => {
