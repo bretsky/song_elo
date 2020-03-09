@@ -152,9 +152,26 @@ def get_current_songs():
 def get_top_songs(n, best=True):
 	top_keys = sorted(list(songs_elo.keys()), key=lambda x: songs_elo[x]["elo"], reverse=best)[:n]
 	top_songs = [(key, songs_elo[key]["elo"]) for key in top_keys]
+	current_top = []
+	with open('best.json' if best else 'worst.json', 'r') as top_file:
+		current_top = json.load(top_file)
 	with open('best.json' if best else 'worst.json', 'w') as top_file:
-		json.dump(top_songs, top_file)
+		equal = True
+		for i in range(len(top_songs)):
+			if top_songs[i][0] != current_top[-1][i][0] or top_songs[i][1] != current_top[-1][i][1]:
+				equal = False
+				break
+
+		# print(set(current_top[-1]) - set(top_songs))
+		if not equal:
+			current_top.append(top_songs)
+		json.dump(current_top, top_file)
 	return top_songs
+
+def get_song_rank(song):
+	top_keys = sorted(list(songs_elo.keys()), key=lambda x: songs_elo[x]["elo"], reverse=True)
+	
+	return top_keys.index(song)
 
 def print_data(data):
 	print(data)
@@ -236,6 +253,7 @@ def get_replaygain(filename):
 def get_songs_stats():
 	percent_rated = 100*not_pristine_elos(songs_elo)/len(songs_elo)
 	mean_ratings = sum((songs_elo[song]['n'] for song in songs_elo))/len(songs_elo)
+	median_ratings = sorted([songs_elo[song]['n'] for song in songs_elo])[len(songs_elo) // 2]
 	elo_stddev = stddev(songs_elo)
 	mean_elo = sum((songs_elo[song]['elo'] for song in songs_elo))/len(songs_elo)
-	return {"percent_rated": percent_rated, "mean_ratings": mean_ratings, "stddev": elo_stddev, "mean_elo": mean_elo}
+	return {"percent_rated": percent_rated, "mean_ratings": mean_ratings, "median_ratings": median_ratings, "stddev": elo_stddev, "mean_elo": mean_elo}

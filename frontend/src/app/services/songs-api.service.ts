@@ -62,4 +62,8 @@ export class SongsApiService {
   getWorstSongs(n: number) {
     return this.http.get(`${API_URL}/worst?n=${n}`).catch(SongsApiService._handleError);
   }
+
+  getRank(song: string) {
+    return this.http.get(`${API_URL}/song${song}/rank`).catch(SongsApiService._handleError);
+  }
 }

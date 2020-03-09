@@ -1,9 +1,11 @@
-import { Component, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef, Injectable, NgZone } from '@angular/core';
 import { SongsApiService } from './services/songs-api.service';
 import { API_URL } from './env';
 import { Meta } from '@angular/platform-browser';
 import WaveSurfer from 'wavesurfer.js';
 import CursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor.min.js';
+import { MatSnackBar, MatSnackBarRef, SimpleSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
+
 
 @Component({
 	selector: 'app-root',
@@ -31,8 +33,9 @@ export class AppComponent implements OnInit, AfterViewInit {
 	seeking = false;
 	topSongs: any;
 	worstSongs: any;
+	snackbarConfig: MatSnackBarConfig;
 
-	constructor(private songsApi: SongsApiService, private meta: Meta, private cd: ChangeDetectorRef) {
+	constructor(private songsApi: SongsApiService, private meta: Meta, private cd: ChangeDetectorRef, private snackbar: MatSnackBar, private zone: NgZone) {
 		meta.addTag({name: 'media-controllable'});
 	}
 
@@ -45,6 +48,12 @@ export class AppComponent implements OnInit, AfterViewInit {
 		},
 		console.error
 		);
+		this.snackbarConfig = new MatSnackBarConfig();
+	    this.snackbarConfig.panelClass = ['background-red'];
+	    this.snackbarConfig.verticalPosition = 'bottom';
+	    this.snackbarConfig.horizontalPosition = 'center';
+	    this.snackbarConfig.duration = 2500;
+
 		this.getQueue();
 		this.songsApi.getTopSongs(50).subscribe(res => {
 			this.topSongs = res;
@@ -128,6 +137,8 @@ export class AppComponent implements OnInit, AfterViewInit {
 	}
 
 	pickSong(song, random) {
+		
+	    
 		if (this.testing) {
 			this.songTestURL = API_URL + '/song' + encodeURIComponent(this.songs[song].filename);
 			this.songsApi.getReplayGain(this.songs[song].filename).subscribe(res => {
@@ -144,25 +155,43 @@ export class AppComponent implements OnInit, AfterViewInit {
 				this.queue = res;
 			});
 			this.songsApi.getTopSongs(50).subscribe(res => {
-				for (var i=0; i < 50; i++) {
-					if (res[i][0] != this.topSongs[i][0]) {
-						console.log(res[i][0] + " replaced " + this.topSongs[i][0] + " as the #" + (i + 1) + " best song!");
-					}
-				}
 				this.topSongs = res;
 			});
 			this.songsApi.getWorstSongs(50).subscribe(res => {
-				for (var i=0; i < 50; i++) {
-					if (res[i][0] != this.worstSongs[i][0]) {
-						console.log(res[i][0] + " replaced " + this.worstSongs[i][0] + " as the #" + (i + 1) + " worst song!");
-					}
-				}
 				this.worstSongs = res;
 			});
+			
 			if (!random) {
+				var rankA, rankB, newRankA, newRankB;
+				this.songsApi.getRank(this.songs['a']['filename']).subscribe(res => {
+					rankA = res;
+				});
+				this.songsApi.getRank(this.songs['b']['filename']).subscribe(res => {
+					rankB = res;
+				});
+				var songA = this.songs['a']['filename'];
+				var songB = this.songs['b']['filename'];
 				this.songsApi.updateElo(this.songs['a']['filename'], this.songs['b']['filename'], (song == 'a') ? 1 : 0).subscribe(res => {
-				console.log(res);
-			});
+					console.log(res);
+					this.songsApi.getRank(songA).subscribe(res => {
+						newRankA = res;
+						console.log(songA + ': ' + (rankA + 1) + ' -> ' + (newRankA + 1))
+						if (Math.min(rankA, newRankA) < 50) {
+							this.zone.run(() => {
+						    	this.snackbar.open(songA + ': ' + (rankA + 1) + ' -> ' + (newRankA + 1), 'x', this.snackbarConfig);
+						    });
+						}
+					});
+					this.songsApi.getRank(songB).subscribe(res => {
+						newRankB = res;
+						console.log(songB + ': ' + (rankB + 1) + ' -> ' + (newRankB + 1))
+						if (Math.min(rankB, newRankB) < 50) {
+							this.zone.run(() => {
+						    	this.snackbar.open(songB + ': ' + (rankA + 1) + ' -> ' + (newRankA + 1), 'x', this.snackbarConfig);
+						    });
+						}
+					});
+				});
 			}		
 			// this.play(this.songs[song]);
 
@@ -235,8 +264,35 @@ export class AppComponent implements OnInit, AfterViewInit {
 	}
 
 	randomSong() {
+		var rankA, rankB, newRankA, newRankB;
+		this.songsApi.getRank(this.songs['a']['filename']).subscribe(res => {
+			rankA = res;
+		});
+		this.songsApi.getRank(this.songs['b']['filename']).subscribe(res => {
+			rankB = res;
+		});
+		var songA = this.songs['a']['filename'];
+		var songB = this.songs['b']['filename'];
 		this.songsApi.updateElo(this.songs['a']['filename'], this.songs['b']['filename'], 0.5).subscribe(res => {
 			console.log(res);
+			this.songsApi.getRank(songA).subscribe(res => {
+				newRankA = res;
+				console.log(songA + ': ' + (rankA + 1) + ' -> ' + (newRankA + 1))
+				if (Math.min(rankA, newRankA) < 50) {
+					this.zone.run(() => {
+				    	this.snackbar.open(songA + ': ' + (rankA + 1) + ' -> ' + (newRankA + 1), 'x', this.snackbarConfig);
+				    });
+				}
+			});
+			this.songsApi.getRank(songB).subscribe(res => {
+				newRankB = res;
+				console.log(songB + ': ' + (rankB + 1) + ' -> ' + (newRankB + 1))
+				if (Math.min(rankB, newRankB) < 50) {
+					this.zone.run(() => {
+				    	this.snackbar.open(songB + ': ' + (rankA + 1) + ' -> ' + (newRankA + 1), 'x', this.snackbarConfig);
+				    });
+				}
+			});
 		})
 		if (this.songs) {
 			let rand = Math.floor((Math.random() * 2));

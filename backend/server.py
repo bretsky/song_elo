@@ -73,6 +73,11 @@ def get_worst():
 		n = int(request.args.get('n'))
 	return jsonify(get_top_songs(n, False))
 
+@app.route('/song/<path:filename>/rank', methods=['GET'])
+def get_rank(filename):
+	return jsonify(get_song_rank('/' + filename))
+
+
 
 
 if __name__ == '__main__':
