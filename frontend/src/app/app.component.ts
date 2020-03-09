@@ -52,7 +52,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 	    this.snackbarConfig.panelClass = ['background-red'];
 	    this.snackbarConfig.verticalPosition = 'bottom';
 	    this.snackbarConfig.horizontalPosition = 'center';
-	    this.snackbarConfig.duration = 2500;
+	    this.snackbarConfig.duration = 5000;
 
 		this.getQueue();
 		this.songsApi.getTopSongs(50).subscribe(res => {
