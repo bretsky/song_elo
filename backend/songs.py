@@ -165,6 +165,8 @@ def get_top_songs(n, best=True):
 		# print(set(current_top[-1]) - set(top_songs))
 		if not equal:
 			current_top.append(top_songs)
+			with open(('best' if best else 'worst') + '_now.json', 'w') as current_file:
+				json.dump(top_songs, current_file)
 		json.dump(current_top, top_file)
 	return top_songs
 

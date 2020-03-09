@@ -24,7 +24,7 @@ export class SongsApiService {
   }
 
   getSong(filename: string) {
-    return this.http.get(`${API_URL}/song/${filename}`).catch(SongsApiService._handleError);
+    return this.http.get(`${API_URL}/song/${encodeURIComponent(filename)}`).catch(SongsApiService._handleError);
   }
 
   getQueue() {
@@ -44,7 +44,7 @@ export class SongsApiService {
   }
 
   getReplayGain(filename: string) {
-    return this.http.get(`${API_URL}/song${filename}/replaygain`).catch(SongsApiService._handleError);
+    return this.http.get(`${API_URL}/song${encodeURIComponent(filename)}/replaygain`).catch(SongsApiService._handleError);
   }
 
   updateElo(song_a: string, song_b: string, result: number) {
@@ -64,6 +64,6 @@ export class SongsApiService {
   }
 
   getRank(song: string) {
-    return this.http.get(`${API_URL}/song${song}/rank`).catch(SongsApiService._handleError);
+    return this.http.get(`${API_URL}/song${encodeURIComponent(song)}/rank`).catch(SongsApiService._handleError);
   }
 }
