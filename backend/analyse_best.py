@@ -5,6 +5,8 @@ top_song_history = []
 with open('best.json', 'r') as best_file:
 	top_song_history = json.load(best_file)
 
+print(len(top_song_history))
+
 all_songs = []
 for instance in top_song_history:
 	for song in instance:
