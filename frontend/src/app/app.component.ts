@@ -289,7 +289,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 				console.log(songB + ': ' + (rankB + 1) + ' -> ' + (newRankB + 1))
 				if (Math.min(rankB, newRankB) < 50) {
 					this.zone.run(() => {
-				    	this.snackbar.open(songB + ': ' + (rankA + 1) + ' -> ' + (newRankA + 1), 'x', this.snackbarConfig);
+				    	this.snackbar.open(songB + ': ' + (rankB + 1) + ' -> ' + (newRankB + 1), 'x', this.snackbarConfig);
 				    });
 				}
 			});
