@@ -22,10 +22,10 @@ export class AppComponent implements OnInit, AfterViewInit {
 	testSource: MediaElementAudioSourceNode;
 	audioSource: MediaElementAudioSourceNode;
 	gain: GainNode;
+	testGain: GainNode;
 	audioCtx = new AudioContext();
 	queue: any;
 	notStarted = true;
-	replaygain = -8;
 	volume = -2;
 	scaledVolume = 1;
 	testing = false;
@@ -141,11 +141,11 @@ export class AppComponent implements OnInit, AfterViewInit {
 	    
 		if (this.testing) {
 			this.songTestURL = API_URL + '/song' + encodeURIComponent(this.songs[song].filename);
-			this.songsApi.getReplayGain(this.songs[song].filename).subscribe(res => {
-				console.log(res);
-				this.replaygain = res['replaygain'];
+			// this.songsApi.getReplayGain(this.songs[song].filename).subscribe(res => {
+			// 	console.log(res);
+			// 	this.replaygain = res['replaygain'];
 			this.adjustVolume();
-		});
+		// 		
 			console.log(this.songTestURL);
 		} else {
 			this.songsApi.getStats().subscribe(res => {
@@ -200,18 +200,18 @@ export class AppComponent implements OnInit, AfterViewInit {
 	}
 
 	adjustVolume() {
-		this.scaledVolume = Math.pow(10, (this.replaygain + this.volume) / 10);
+		this.scaledVolume = Math.pow(10, (this.volume) / 10);
 		console.log(this.gain.gain.value)
 		this.gain.gain.value = this.scaledVolume;
 		console.log(this.gain.gain.value)
 	}
 
 	play(song) {
-		this.songsApi.getReplayGain(song.filename).subscribe(res => {
-			console.log(res);
-			this.replaygain = res['replaygain'];
-			this.adjustVolume();
-		});
+		// this.songsApi.getReplayGain(song.filename).subscribe(res => {
+		// 	console.log(res);
+		// 	this.replaygain = res['replaygain'];
+		// this.adjustVolume();
+		// });
 		this.songURL = API_URL + '/song' + encodeURIComponent(song.filename);
 		this.wavesurfer.load(this.songURL);
 	}
@@ -315,13 +315,13 @@ export class AppComponent implements OnInit, AfterViewInit {
 				this.audioCtx = new AudioContext();
 				this.testplayer.crossOrigin = 'anonymous';
 				this.testSource = this.audioCtx.createMediaElementSource(this.testplayer);
-				this.gain = this.audioCtx.createGain();
-				this.gain.gain.value = 1;
-				this.gain.channelCount = 1;
-				this.gain.channelCountMode = "explicit";
-				this.gain.channelInterpretation = "speakers";
-				this.testSource.connect(this.gain);
-				this.gain.connect(this.audioCtx.destination);
+				this.testGain = this.audioCtx.createGain();
+				this.testGain.gain.value = 1;
+				this.testGain.channelCount = 1;
+				this.testGain.channelCountMode = "explicit";
+				this.testGain.channelInterpretation = "speakers";
+				this.testSource.connect(this.testGain);
+				this.testGain.connect(this.audioCtx.destination);
 				console.log(this.audioCtx);
 			}, 0);
 		}
