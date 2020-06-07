@@ -155,19 +155,20 @@ def get_top_songs(n, best=True):
 	current_top = []
 	with open('best.json' if best else 'worst.json', 'r') as top_file:
 		current_top = json.load(top_file)
-	with open('best.json' if best else 'worst.json', 'w') as top_file:
-		equal = True
-		for i in range(len(top_songs)):
-			if top_songs[i][0] != current_top[-1][i][0] or top_songs[i][1] != current_top[-1][i][1]:
-				equal = False
-				break
+		if len(current_top[-1]) == n:
+			with open('best.json' if best else 'worst.json', 'w') as top_file:
+				equal = True
+				for i in range(len(top_songs)):
+					if top_songs[i][0] != current_top[-1][i][0] or top_songs[i][1] != current_top[-1][i][1]:
+						equal = False
+						break
 
-		# print(set(current_top[-1]) - set(top_songs))
-		if not equal:
-			current_top.append(top_songs)
-			with open(('best' if best else 'worst') + '_now.json', 'w') as current_file:
-				json.dump(top_songs, current_file)
-		json.dump(current_top, top_file)
+				# print(set(current_top[-1]) - set(top_songs))
+				if not equal:
+					current_top.append(top_songs)
+					with open(('best' if best else 'worst') + '_now.json', 'w') as current_file:
+						json.dump(top_songs, current_file)
+				json.dump(current_top, top_file)
 	return top_songs
 
 def get_song_rank(song):
