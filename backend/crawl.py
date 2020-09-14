@@ -67,5 +67,6 @@ def check(songs):
 
 songs_elo = json.load(open('elo_id.json', 'r', encoding='utf-8'))
 crawl('')
+# print(len(songs_elo))
 # songs_elo = check(songs_elo)
 json.dump(songs_elo, open('elo_id.json', 'w', encoding='utf-8'))
